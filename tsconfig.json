@@ -1,6 +1,14 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react-native", // hoặc "react"
+    "module": "esnext", // hoặc "commonjs" nếu cần
+    "target": "esnext", // hoặc "es6" tùy theo phiên bản TypeScript
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "strict": true
+  },
+  "expo": {
+    "platforms": ["ios", "android", "web"]
   }
 }
