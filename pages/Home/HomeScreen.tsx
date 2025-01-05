@@ -2,20 +2,17 @@ import { StatusBar } from "expo-status-bar";
 import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 import { useQuery, gql } from "@apollo/client";
 import { useEffect } from "react";
-import { Category } from "../../graphql/product.graphql";
+import { useCategoryWithPagination } from "../../graphql/product.graphql";
+// import { Category } from "../../graphql/product.graphql";
 
 
 export const HomeScreen = () => {
-    // Thực hiện truy vấn với useQuery
-    const { loading, error, data } = Category()
+    const { data, loading, error, fetchMore, loadMoreProducts } = useCategoryWithPagination();
+    const offset = 0
+    const limit = 3
     useEffect(() => {
-        if (error){
-            console.log("Error fetching data: ", error.message)
-        }
-        if (loading){
-            console.log("Loading")
-        }
-    }, [loading, error, data])
+        fetchMore({ variables: { offset, limit } }); // Initial fetch
+      }, []);
   
     if (loading) return <Text style={styles.loadingText}>Loading...</Text>;
     if (error) return <Text style={styles.errorText}>Error: {error.message}</Text>;
@@ -23,7 +20,7 @@ export const HomeScreen = () => {
     return (
       <View style={styles.container}>
         <FlatList
-          data={data.getCategory}
+          data={data?.getCategory}
           keyExtractor={(item) => item.id.toString()} // Sử dụng id của từng mục làm key
           renderItem={({ item }) => (
             <View style={styles.item}>
@@ -36,7 +33,7 @@ export const HomeScreen = () => {
                 <Text style={styles.description}>{item.description}</Text>
                 <Text style={styles.status}>Status: {item.status}</Text>
                 <Text style={styles.slug}>Slug: {item.slug}</Text>
-                <Text style={styles.position}>Position: {item.postion}</Text>
+                <Text style={styles.position}>Position: {item.position}</Text>
                 <Text style={styles.deleted}>
                   Deleted: {item.deleted ? "Yes" : "No"}
                 </Text>
@@ -58,7 +55,7 @@ export const HomeScreen = () => {
                         <Text>Status: {product.status}</Text>
                         <Text>Slug: {product.slug}</Text>
                         <Text>Featured: {product.featured ? "Yes" : "No"}</Text>
-                        <Text>Position: {product.postion}</Text>
+                        <Text>Position: {product.position}</Text>
                       </View>
                     </View>
                   )}
