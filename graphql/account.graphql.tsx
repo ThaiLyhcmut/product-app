@@ -37,24 +37,11 @@ const LOGIN_ACCOUNT = gql`
   }
 `;
 
-export type Account = {
-  id: string,
-  fullName: string,
-  email: string,
-  address: string,
-  phone: string,
-  avatar: string,
-  sex: string,
-  birthday: string,
-  token: string,
-  code: string,
-  msg: string
-}
 
 const REGISTER_ACCOUNT = gql`
-  mutation RegisterAccount {
+  mutation RegisterAccount($email: String!, $fullName: String!, $password: String, $otp: String) {
     registerAccount(
-        account: { fullName: null, email: null, password: null, otp: null }
+        account: { fullName: $fullName, email: $email, password: $password, otp: $otp }
     ) {
         id
         fullName
@@ -99,14 +86,33 @@ mutation UpdateAccount {
 `
 
 const CREATE_OTP = gql`
-  mutation CreateOtp {
-    createOtp(email: null) {
+  mutation createOtp($email: String!){  
+    createOtp(email: $email) {
         code
         msg
     }
 }
 
 `
+
+export type Account = {
+  id: string,
+  fullName: string,
+  email: string,
+  address: string,
+  phone: string,
+  avatar: string,
+  sex: string,
+  birthday: string,
+  token: string,
+  code: string,
+  msg: string
+}
+
+export type ResOtp = {
+  code: string
+  msg: string
+}
 
 
 export const useLogin = () => {
@@ -129,3 +135,38 @@ export const useLogin = () => {
 
   return { loginAccount, data, loading, error };
 };
+
+
+export const useOtp = () => {
+  const [otp, {data, loading, error}] = useMutation<{createOtp: ResOtp}>(CREATE_OTP)
+  const createOtp = async (email: string) => {
+    try{
+      const response = await otp({
+        variables: { email },
+      })
+      console.log("Create otp success:", response.data?.createOtp)
+      return response.data?.createOtp
+    }catch(e){
+      console.log("Create otp error:", e)
+      return null
+    }
+  }
+  return { createOtp, data, loading, error }
+}
+
+export const useregisterAccount = () => {
+  const [register, {data,loading, error}] = useMutation<{registerAccount: Account}>(REGISTER_ACCOUNT)
+  const registerAccount = async (email: string, fullName: string, password: string, otp: string) => {
+    try {
+      const response = await register({
+        variables: {fullName, email, password, otp}
+      })
+      console.log("Register success:", response.data?.registerAccount)
+      return response.data?.registerAccount
+    }catch(e){
+      console.log("Create otp error:", e)
+      return null
+    }
+  }
+  return {registerAccount, data, loading, error}
+}

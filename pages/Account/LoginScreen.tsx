@@ -1,17 +1,13 @@
-import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useLogin } from "../../graphql/account.graphql";
 import { handleLoginSuccess } from "../../store";
-import { useNavigation } from "@react-navigation/native";
-import { AccountScreen } from "../../pages/Account/AccountScreen";
 
-export const LoginScreen = () => {
+export const LoginScreen = ({ navigation }: any) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const { loginAccount, data, loading, error } =  useLogin()
+    const { loginAccount, data, loading, error } = useLogin()
     const [errorMessage, setErrorMessage] = useState("");
-    const navigation = useNavigation()
 
     const handleLogin = async () => {
         setErrorMessage("");  // Clear any previous error message
@@ -22,12 +18,19 @@ export const LoginScreen = () => {
             return;
         }
 
+        // Biểu thức chính quy để kiểm tra email hợp lệ
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            setErrorMessage("Email không hợp lệ!");
+            return;
+        }
         // Gọi hàm loginAccount từ GraphQL
         try {
             const userData = await loginAccount(email, password);
             if (userData) {
                 await handleLoginSuccess(userData);
-                navigation.goBack();
+                navigation.navigate("Account")
             }
         } catch (err) {
             setErrorMessage("Đã xảy ra lỗi khi đăng nhập!");
@@ -36,22 +39,16 @@ export const LoginScreen = () => {
     };
 
     if (loading) {
-    return (
-        <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#0000ff" />
-        </View>
-    );
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
     }
-    
-    if (error) {
-    return (
-        <View style={styles.errorContainer}>
-            <Text>Error: {error.message}</Text>
-        </View>
-    );
-    }
+
     return (
         <View style={styles.container}>
+            {error ? <Text style={styles.errorText}>{error.message}</Text> : null}
             <View style={styles.boxLogin}>
                 <Text style={styles.title}>Đăng nhập</Text>
                 <TextInput
@@ -71,13 +68,13 @@ export const LoginScreen = () => {
                 {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
                 <View style={styles.noInput}>
                     <TouchableOpacity>
-                        <Text style={styles.linkText}>Quên mật khẩu?</Text>
+                        <Text style={styles.linkText} >Quên mật khẩu?</Text>
                     </TouchableOpacity>
                     <TouchableOpacity>
-                        <Text style={styles.linkText}>Đăng ký</Text>
+                        <Text style={styles.linkText} onPress={() => navigation.navigate("Register")}>Đăng ký</Text>
                     </TouchableOpacity>
                 </View>
-                <Button title="Đăng nhập" color="#0066cc" onPress={handleLogin}/>
+                <Button title="Đăng nhập" color="#0066cc" onPress={handleLogin} />
             </View>
         </View>
     );
@@ -152,7 +149,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     linkText: {
-        color: "#0066cc", 
+        color: "#0066cc",
         fontSize: 14,
     },
 });

@@ -1,17 +1,12 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator, ScrollView, Image, Alert } from "react-native";
-import { deleteUser, getToken, getUser, User } from "../../store";
-import { LoginScreen } from "../../components/Account/LoginScreen";
-import { ParamListBase, useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, ScrollView, Image, Alert } from "react-native";
+import { deleteUser, getUser, User } from "../../store";
 
 // Định nghĩa kiểu dữ liệu cho userData
 
-export const AccountScreen = () => {
-    
+export const AccountScreen = ({navigation}: any) => {
     const [userData, setUserData] = useState<User | null>(null);
-    const navigation = useNavigation();
     useEffect(() => {
         const CheckUser = async () => {
             const user = await getUser()
@@ -31,7 +26,7 @@ export const AccountScreen = () => {
             onPress: async () => {
               await deleteUser(); // Clear user data
               setUserData(null); // Clear user info
-              navigation.navigate
+              navigation.navigate("Login")
             },
           },
         ]);
