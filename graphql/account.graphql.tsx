@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { gql, useMutation } from "@apollo/client";
 
 
 const GET_ACCOUNT = gql`
@@ -20,22 +20,36 @@ const GET_ACCOUNT = gql`
 `
 
 const LOGIN_ACCOUNT = gql`
-  mutation LoginAccount {
-    loginAccount(account: { email: null, password: null }) {
-        id
-        fullName
-        email
-        address
-        phone
-        avatar
-        sex
-        birthday
-        token
-        code
-        msg
+  mutation LoginAccount($email: String!, $password: String!) {
+    loginAccount(account: { email: $email, password: $password }) {
+      id
+      fullName
+      email
+      address
+      phone
+      avatar
+      sex
+      birthday
+      token
+      code
+      msg
     }
   }
-`
+`;
+
+export type Account = {
+  id: string,
+  fullName: string,
+  email: string,
+  address: string,
+  phone: string,
+  avatar: string,
+  sex: string,
+  birthday: string,
+  token: string,
+  code: string,
+  msg: string
+}
 
 const REGISTER_ACCOUNT = gql`
   mutation RegisterAccount {
@@ -93,3 +107,25 @@ const CREATE_OTP = gql`
 }
 
 `
+
+
+export const useLogin = () => {
+  const [login, { data, loading, error }] = useMutation<{loginAccount:Account}>(LOGIN_ACCOUNT);
+
+  const loginAccount = async (email: string, password: string) => {
+    try {
+      const response = await login({
+        variables: { email, password },
+      });
+      // Handle successful login
+      console.log('Login successful:', response.data?.loginAccount);
+      return response.data?.loginAccount;
+    } catch (err) {
+      // Handle error
+      console.error('Login error:', err);
+      return null;
+    }
+  };
+
+  return { loginAccount, data, loading, error };
+};

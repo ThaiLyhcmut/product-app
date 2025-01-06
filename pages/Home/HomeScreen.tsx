@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from "react-native";
 import { useQuery, gql } from "@apollo/client";
 import { useEffect } from "react";
 import { useCategoryWithPagination } from "../../graphql/product.graphql";
@@ -14,7 +14,13 @@ export const HomeScreen = () => {
         fetchMore({ variables: { offset, limit } }); // Initial fetch
       }, []);
   
-    if (loading) return <Text style={styles.loadingText}>Loading...</Text>;
+    if (loading && offset === 0) {
+       return (
+         <View style={styles.loaderContainer}>
+           <ActivityIndicator size="large" color="#0000ff" />
+         </View>
+       );
+     }
     if (error) return <Text style={styles.errorText}>Error: {error.message}</Text>;
   
     return (
@@ -75,6 +81,11 @@ export const HomeScreen = () => {
       backgroundColor: "#f4f4f4",
       paddingTop: 10,
       paddingHorizontal: 10,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
     },
     loadingText: {
       textAlign: "center",
