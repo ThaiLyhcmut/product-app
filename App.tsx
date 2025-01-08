@@ -13,50 +13,91 @@ import { useEffect, useState } from 'react';
 import { getToken } from './store';
 import client from './graphql/graphql';
 import { RegisterScreen } from './pages/Account/RegisterScreen';
+import { ProductDetailScreen } from './pages/Product/DetailScreen';
+import { Product, useCategoryWithPagination } from './graphql/product.graphql';
 
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+/* STACK OF HOME */
+export type HomeList = {
+  Home: undefined
+}
+const StackHome = createNativeStackNavigator<HomeList>()
 
 // Stack cho Home Tab
-function HomeStack() {
+export const HomeStack = () => {
   return (
-    <Stack.Navigator screenOptions={{
+    <StackHome.Navigator screenOptions={{
       headerShown: false
     }}>
-      <Stack.Screen name="Home" component={HomeScreen} />
+      <StackHome.Screen name="Home" component={HomeScreen} />
       {/* Các màn hình con khác của Home */}
-    </Stack.Navigator>
+    </StackHome.Navigator>
   );
 }
-
+/* END STACK OF HOME*/
+/*STACK OF PRODUCT*/
+export type ProductList = {
+  Product: undefined,
+  ProductDetail: { product: Product}
+}
+const StackProduct = createNativeStackNavigator<ProductList>()
 // Stack cho Product Tab
-function ProductStack() {
+export const ProductStack = () => {
+  const { data, loading, error, fetchMore, loadMoreProducts } = useCategoryWithPagination();
+  let product: Product = {
+    id: 0,
+      title: "NULL",
+      description: "NULL",
+      price: 0,
+      discountPercent: 0,
+      stock: "NULL",
+      thumbnail: "NULL",
+      featured: false,
+      slug: "NULL",
+      status: "NULL",
+      position: "NULL", // Fixed typo
+  }
+  if (data){
+    product = product = data?.getCategory[0].product[0] 
+  }
   return (
-    <Stack.Navigator screenOptions={{
+    <StackProduct.Navigator initialRouteName='Product' screenOptions={{
       headerShown: false
     }}>
-      <Stack.Screen name="Product" component={ProductScreen} />
+      <StackProduct.Screen name="Product" component={ProductScreen} />
       {/* Các màn hình con khác của Product */}
-    </Stack.Navigator>
+      <StackProduct.Screen name="ProductDetail" initialParams={{product}} component={ProductDetailScreen} />
+    </StackProduct.Navigator>
   );
 }
-
+/*END STACK OF PRODUCT */
+/*STACK OF CART */
+export type CartList = {
+  Cart: undefined
+}
+const StackCart = createNativeStackNavigator<CartList>()
 // Stack cho Cart Tab
-function CartStack() {
+export const CartStack = () => {
   return (
-    <Stack.Navigator screenOptions={{
+    <StackCart.Navigator screenOptions={{
       headerShown: false
     }}>
-      <Stack.Screen name="Cart" component={CartScreen} />
+      <StackCart.Screen name="Cart" component={CartScreen} />
       {/* Các màn hình con khác của Cart */}
-    </Stack.Navigator>
+    </StackCart.Navigator>
   );
 }
-
+/*END STACK OF CART*/
+/*STACK OF ACCOUNT */
+export type AccountList = {
+  Account: undefined
+  Login: undefined
+  Register: undefined
+}
+const StackAccount = createNativeStackNavigator<AccountList>()
 // Stack cho Account Tab
-export function AccountStack() {
+export const AccountStack = () => {
   const [isLogin, setIsLogin] = useState(false);
-  const navigate = useNavigation()
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await getToken();
@@ -67,22 +108,22 @@ export function AccountStack() {
       }
     };
     checkLoginStatus();
-  }, [isLogin, navigate])
+  }, [isLogin])
   console.log(isLogin)
   return (
-    <Stack.Navigator
+    <StackAccount.Navigator
       initialRouteName={isLogin?"Account":"Login"}
       screenOptions={{
         headerShown: false
     }}>
-      <Stack.Screen name="Account" component={AccountScreen} />
-      <Stack.Screen name="Login" component={LoginScreen}/>
-      <Stack.Screen name="Register" component={RegisterScreen}/>
-    </Stack.Navigator>
+      <StackAccount.Screen name="Account" component={AccountScreen} />
+      <StackAccount.Screen name="Login" component={LoginScreen}/>
+      <StackAccount.Screen name="Register" component={RegisterScreen}/>
+    </StackAccount.Navigator>
   );
 }
 
-
+/*END STACK OF ACCOUNT*/
 // Tab Navigator
 function TabNavigator() {
   

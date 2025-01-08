@@ -1,4 +1,5 @@
 import { useLazyQuery, gql } from "@apollo/client";
+import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 const GET_CATEGORY_WITH_PAGINATION = gql`
   query GetCategory($offset: Int, $limit: Int) {
@@ -29,11 +30,11 @@ const GET_CATEGORY_WITH_PAGINATION = gql`
 `;
 
 export type Product = {
-  id: string;
+  id: number;
   title: string;
   description: string;
-  price: string;
-  discountPercent: string;
+  price: Float;
+  discountPercent: number;
   stock: string;
   thumbnail: string;
   featured: boolean;

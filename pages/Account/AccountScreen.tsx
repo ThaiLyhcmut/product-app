@@ -7,6 +7,7 @@ import { Picker } from '@react-native-picker/picker';
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useUpdateAccount } from "../../graphql/account.graphql";
+import { parse } from "@babel/core";
 
 
 
@@ -67,16 +68,14 @@ export const AccountScreen = ({ navigation }: any) => {
   const handleSaveChanges = async () => {
     if (userData) {
       const updatedUser = { ...userData, ...editData };
-      console.log("1", updatedUser)
       try {
-        const userNew = await updateAccount(updatedUser.fullName, updatedUser.address, updatedUser.avatar, updatedUser.phone, updatedUser.sex, updatedUser.birthday)
+        const userNew = await updateAccount(updatedUser.fullName == "" ? null : updatedUser.fullName, updatedUser.address == "" ? null : updatedUser.address, updatedUser.avatar == "" ? null : updatedUser.avatar, updatedUser.phone == "" ? null : updatedUser.phone, updatedUser.sex == "" ? "Khác" : updatedUser.sex, new Date(updatedUser.birthday))
         if (userNew) {
-          console.log("2",userNew)
           const check = await handleLoginSuccess(userNew)
           setUserData(updatedUser);
+
         }
       } catch (e) {
-        console.log(e)
       }
     }
     setEditModalVisible(false);
@@ -164,7 +163,6 @@ export const AccountScreen = ({ navigation }: any) => {
                 maximumDate={new Date(moment().add(-1, 'days').toISOString())}
                 mode="date"
                 onChange={date => {
-                  console.log(date)
                   // Chuyển đổi ngày sang định dạng 'YYYY-MM-DD'
                   const formattedDate = moment(date).format('YYYY-MM-DD');
                   setEditData((prev) => ({ ...prev, birthday: formattedDate }));

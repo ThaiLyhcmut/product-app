@@ -13,9 +13,6 @@ export const handleLoginSuccess = async (data: Account) => {
     console.log(msg || "Đã xảy ra lỗi");
     return false;
   }
-
-  console.log(email, token); // In token ra để kiểm tra
-
   // Lưu trữ token vào Keychain
   
   await SecureStore.setItemAsync('TOKEN', token); // Hoặc dùng id thay vì email nếu cần
@@ -24,12 +21,12 @@ export const handleLoginSuccess = async (data: Account) => {
   // Lưu trữ các thông tin khác vào AsyncStorage
   await AsyncStorage.setItem('email', email);
   await AsyncStorage.setItem('fullName', fullName);
-  await AsyncStorage.setItem('id', id);
-  await AsyncStorage.setItem('address', address);
-  await AsyncStorage.setItem('avatar', avatar);
+  await AsyncStorage.setItem('id', JSON.stringify(id));
+  await AsyncStorage.setItem('address', address || "");
+  await AsyncStorage.setItem('avatar', avatar || "");
   await AsyncStorage.setItem('sex', sex);
-  await AsyncStorage.setItem('birthday', birthday);
-  await AsyncStorage.setItem('phone', phone)
+  await AsyncStorage.setItem('birthday', birthday || "");
+  await AsyncStorage.setItem('phone', phone || "")
   return true;
 };
 
@@ -42,7 +39,7 @@ export const getToken = async () => {
 export interface User {
   email: string | null;
   fullName: string | null;
-  id: string | null;
+  id: number | null;
   address: string | null;
   avatar: string | null;
   sex: string | null;
@@ -54,7 +51,12 @@ export interface User {
 export const getUser = async () => {
   const email = await AsyncStorage.getItem('email');
   const fullName = await AsyncStorage.getItem('fullName');
-  const id = await AsyncStorage.getItem('id');
+  const idData = await AsyncStorage.getItem('id');
+  var id: number|null
+  if (idData != null){
+    id = parseInt(idData)
+  }
+  else id = null
   const address = await AsyncStorage.getItem('address');
   const avatar = await AsyncStorage.getItem('avatar');
   const sex = await AsyncStorage.getItem('sex');

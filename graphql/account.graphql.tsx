@@ -1,4 +1,5 @@
 import { gql, useMutation } from "@apollo/client";
+import moment from "moment";
 
 
 const GET_ACCOUNT = gql`
@@ -39,7 +40,7 @@ const LOGIN_ACCOUNT = gql`
 
 
 const REGISTER_ACCOUNT = gql`
-  mutation RegisterAccount($email: String!, $fullName: String!, $password: String!, $otp: String!) {
+  mutation RegisterAccount( $fullName: String!, $email: String!, $password: String!, $otp: String!) {
     registerAccount(
         account: { fullName: $fullName, email: $email, password: $password, otp: $otp }
     ) {
@@ -58,31 +59,32 @@ const REGISTER_ACCOUNT = gql`
   }
 `
 const UPDATE_ACCOUNT = gql`
-mutation UpdateAccount($fullName: String, $address: String, $phone: String, $avatar: String, $sex: String, $birthday: String) {
-  updateAccount(
-    account: {
-      fullName: $fullName,
-      address: $address,
-      phone: $phone,
-      avatar: $avatar,
-      sex: $sex,
-      birthday: $birthday,
+  mutation UpdateAccount($fullName: String, $address: String, $avatar: String, $phone: String, $sex: String, $birthday: Time) {
+    updateAccount(
+        account: {
+              fullName: $fullName
+              birthday: $birthday
+              address: $address
+              phone: $phone
+              sex: $sex
+              avatar: $avatar
+        }
+    ) {
+        id
+        fullName
+        email
+        address
+        phone
+        avatar
+        sex
+        birthday
+        token
+        code
+        msg
     }
-  ) {
-    id
-    fullName
-    email
-    address
-    phone
-    avatar
-    sex
-    birthday
-    token
-    code
-    msg
-  }
 }
 `
+
 
 const CREATE_OTP = gql`
   mutation createOtp($email: String!){  
@@ -95,7 +97,7 @@ const CREATE_OTP = gql`
 `
 
 export type Account = {
-  id: string,
+  id: number,
   fullName: string,
   email: string,
   address: string,
@@ -134,16 +136,22 @@ export const useLogin = () => {
 
   return { loginAccount, data, loading, error };
 };
-
 export const useUpdateAccount = () => {
   const [update, { data, loading, error }] = useMutation<{ updateAccount: Account }>(UPDATE_ACCOUNT)
 
-  const updateAccount = async (fullName: string, address: string, avatar: string, phone: string, sex: string, birthday: string) => {
-    console.log(fullName, address, birthday)
+  const updateAccount = async (
+    fullName: string | null,
+    address: string | null,
+    avatar: string | null,
+    phone: string | null,
+    sex: string | null,
+    birthday: Date
+  ) => {
     try {
       const response = await update({
-        variables: {fullName, address, phone, avatar, sex, birthday }
+        variables: {fullName, address, avatar, phone, sex, birthday}
       })
+  
       console.log("Update success:", response.data?.updateAccount)
       return response.data?.updateAccount
     } catch (e) {
@@ -151,9 +159,11 @@ export const useUpdateAccount = () => {
       return null
     }
   }
+  
 
   return { updateAccount, data, loading, error }
 }
+
 export const useOtp = () => {
   const [otp, {data, loading, error}] = useMutation<{createOtp: ResOtp}>(CREATE_OTP)
   const createOtp = async (email: string) => {

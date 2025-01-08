@@ -1,174 +1,177 @@
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from "react-native";
-import { useQuery, gql } from "@apollo/client";
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { useEffect } from "react";
-import { useCategoryWithPagination } from "../../graphql/product.graphql";
-// import { Category } from "../../graphql/product.graphql";
-
+import { Product, useCategoryWithPagination } from "../../graphql/product.graphql";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+type RootStackParamList = {
+  Home: undefined; // Home không có tham số
+  ProductTab: { screen: 'ProductDetail'; params: { product: Product } }; // Tham số cho màn hình ProductTab
+}
 
 export const HomeScreen = () => {
-    const { data, loading, error, fetchMore, loadMoreProducts } = useCategoryWithPagination();
-    const offset = 0
-    const limit = 3
-    useEffect(() => {
-        fetchMore({ variables: { offset, limit } }); // Initial fetch
-      }, []);
-  
-    if (loading && offset === 0) {
-       return (
-         <View style={styles.loaderContainer}>
-           <ActivityIndicator size="large" color="#0000ff" />
-         </View>
-       );
-     }
-    if (error) return <Text style={styles.errorText}>Error: {error.message}</Text>;
-  
+  const { data, loading, error, fetchMore } = useCategoryWithPagination();
+  const offset = 0;
+  const limit = 3;
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Home'>>();
+  useEffect(() => {
+    fetchMore({ variables: { offset, limit } }); // Initial fetch
+  }, []);
+
+  if (loading && offset === 0) {
     return (
-      <View style={styles.container}>
-        <FlatList
-          data={data?.getCategory}
-          keyExtractor={(item) => item.id.toString()} // Sử dụng id của từng mục làm key
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Image
-                source={{ uri: item.thumbnail }}
-                style={styles.thumbnail}
-              />
-              <View style={styles.textContainer}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.description}>{item.description}</Text>
-                <Text style={styles.status}>Status: {item.status}</Text>
-                <Text style={styles.slug}>Slug: {item.slug}</Text>
-                <Text style={styles.position}>Position: {item.position}</Text>
-                <Text style={styles.deleted}>
-                  Deleted: {item.deleted ? "Yes" : "No"}
-                </Text>
-                <FlatList
-                  data={item.product}
-                  keyExtractor={(product) => product.id.toString()}
-                  renderItem={({ item: product }) => (
-                    <View style={styles.productItem}>
-                      <Image
-                        source={{ uri: product.thumbnail }}
-                        style={styles.productThumbnail}
-                      />
-                      <View style={styles.productTextContainer}>
-                        <Text style={styles.productTitle}>{product.title}</Text>
-                        <Text>{product.description}</Text>
-                        <Text>Price: {product.price}</Text>
-                        <Text>Discount: {product.discountPercent}%</Text>
-                        <Text>Stock: {product.stock}</Text>
-                        <Text>Status: {product.status}</Text>
-                        <Text>Slug: {product.slug}</Text>
-                        <Text>Featured: {product.featured ? "Yes" : "No"}</Text>
-                        <Text>Position: {product.position}</Text>
-                      </View>
-                    </View>
-                  )}
-                />
-              </View>
-            </View>
-          )}
-        />
-        <StatusBar style="auto" />
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
-  };
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "#f4f4f4",
-      paddingTop: 10,
-      paddingHorizontal: 10,
-    },
-    loaderContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    loadingText: {
-      textAlign: "center",
-      fontSize: 18,
-      color: "#555",
-      marginTop: 20,
-    },
-    errorText: {
-      textAlign: "center",
-      fontSize: 18,
-      color: "red",
-      marginTop: 20,
-    },
-    item: {
-      flexDirection: "column",
-      padding: 15,
-      marginVertical: 10,
-      backgroundColor: "#fff",
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: "#ddd",
-    },
-    thumbnail: {
-      width: "100%",
-      height: 200,
-      borderRadius: 8,
-      marginBottom: 15,
-    },
-    textContainer: {
-      paddingHorizontal: 10,
-    },
-    title: {
-      fontSize: 18,
-      fontWeight: "bold",
-      marginBottom: 5,
-    },
-    description: {
-      fontSize: 14,
-      color: "#777",
-      marginBottom: 5,
-    },
-    status: {
-      fontSize: 14,
-      color: "#333",
-      marginBottom: 5,
-    },
-    slug: {
-      fontSize: 14,
-      color: "#333",
-      marginBottom: 5,
-    },
-    position: {
-      fontSize: 14,
-      color: "#333",
-      marginBottom: 5,
-    },
-    deleted: {
-      fontSize: 14,
-      color: "#333",
-      marginBottom: 15,
-    },
-    productItem: {
-      flexDirection: "row",
-      padding: 10,
-      marginVertical: 10,
-      backgroundColor: "#f9f9f9",
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: "#ddd",
-    },
-    productThumbnail: {
-      width: 60,
-      height: 60,
-      borderRadius: 8,
-      marginRight: 15,
-    },
-    productTextContainer: {
-      flex: 1,
-      justifyContent: "center",
-    },
-    productTitle: {
-      fontSize: 16,
-      fontWeight: "bold",
-      marginBottom: 5,
-    },
-  });
+  }
+
+  if (error) return <Text style={styles.errorText}>Error: {error.message}</Text>;
+
+  return (
+    <View style={styles.container}>
+      {/* Tiêu đề cho danh sách sản phẩm nổi bật */}
+      <Text style={styles.featuredProductsTitle}>Danh sách sản phẩm nổi bật</Text>
+
+      <FlatList
+        data={data?.getCategory}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.categoryContainer}>
+            {/* Hình ảnh category */}
+            <Text style={styles.categoryTitle}>{item.title}</Text>
+            <Image
+              source={{ uri: item.thumbnail || 'https://via.placeholder.com/400x200' }} // Sử dụng placeholder nếu không có hình ảnh
+              style={styles.categoryImage}
+            />
+            
+            {/* Tiêu đề của category */}
+            
+
+            {/* Hiển thị sản phẩm trong mỗi category */}
+            <FlatList
+              data={item.product}
+              keyExtractor={(product) => product.id.toString()}
+              renderItem={({ item: product }) => (
+                <View style={styles.productItem}>
+                  <Image
+                    source={{ uri: product.thumbnail }}
+                    style={styles.productThumbnail}
+                  />
+                  <View style={styles.productTextContainer}>
+                    <Text style={styles.productTitle}>{product.title}</Text>
+                    <Text style={styles.productDescription}>
+                      {product.description}
+                    </Text>
+                    <Text style={styles.productPrice}>Giá niêm yết: {product.price}</Text>
+                    <Text style={styles.productDiscount}>Giảm: {product.discountPercent}%</Text>
+                    <Text style={{ fontWeight: "bold" }}>
+                      Giá mới: {product.price * (1 - product.discountPercent / 100)}
+                    </Text>
+                  </View>
+                  {/* Thêm nút vào giỏ hàng */}
+                  <TouchableOpacity style={styles.seenDetailButton} onPress={() => {
+                      navigation.navigate('ProductTab', {
+                        screen: 'ProductDetail',  // Điều hướng đến màn hình chi tiết
+                        params: { product: product },  // Truyền tham số vào màn hình chi tiết
+                      });
+                    }}>
+                    <Text style={styles.seenDetail}>Chi tiết</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+          </View>
+        )}
+      />
+      <StatusBar style="auto" />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  featuredProductsTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 15,
+  },
+  categoryContainer: {
+    marginBottom: 20,
+    width: "100%",
+  },
+  categoryImage: {
+    width: "100%",
+    height: 200, // Hình chữ nhật
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  categoryTitle: {
+    fontWeight: "500",
+    color: "#f0768b",
+    marginBottom: 10,
+    textAlign: "center",
+    fontSize: 25,
+  },
+  productItem: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+  },
+  productThumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  productTextContainer: {
+    flex: 1,
+  },
+  productTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  productDescription: {
+    fontSize: 12,
+    color: "#777",
+    marginBottom: 5,
+  },
+  productPrice: {
+    fontSize: 14,
+    fontWeight: "bold",
+    textDecorationLine: "line-through", // Thêm dấu gạch ngang
+    color: "#777", // Màu sắc cho giá cũ (có thể điều chỉnh theo ý muốn)
+  },
+  productDiscount: {
+    fontSize: 12,
+    color: "green",
+    marginBottom: 5,
+  },
+  seenDetailButton: {
+    backgroundColor: "green",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignSelf: "flex-start",
+  },
+  seenDetail: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+});

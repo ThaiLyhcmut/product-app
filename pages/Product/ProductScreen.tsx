@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Button, 
-  Image, 
-  ScrollView, 
-  StyleSheet, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  View, 
-  ActivityIndicator 
+import {
+  Button,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ActivityIndicator
 } from "react-native";
 import { CategoryType, Product, useCategoryWithPagination } from "../../graphql/product.graphql";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { ProductList } from "../../App";
+import { RouteProp } from "@react-navigation/native";
 
-export const ProductScreen = () => {
+type ProductScreenNavigationProp = NativeStackNavigationProp<ProductList, "Product">;
+type ProductScreenRouteProp = RouteProp<ProductList, "Product">;
+
+interface ProductScreenProps {
+  navigation: ProductScreenNavigationProp;
+  route: ProductScreenRouteProp;
+}
+
+export const ProductScreen: React.FC<ProductScreenProps> = ({ route, navigation }) => {
   const { data, loading, error, fetchMore, loadMoreProducts } = useCategoryWithPagination();
   const [offset, setOffset] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -42,7 +53,7 @@ export const ProductScreen = () => {
     const contentHeight = event.nativeEvent.contentSize.height; // Tổng chiều cao của nội dung
     const contentOffsetY = event.nativeEvent.contentOffset.y; // Vị trí cuộn hiện tại
     const layoutHeight = event.nativeEvent.layoutMeasurement.height; // Chiều cao của khu vực hiển thị
-  
+
     // Kiểm tra nếu cuộn đến gần giữa nội dung
     if (contentOffsetY + layoutHeight / 2 >= contentHeight / 2 && productLength(selectedCategory) > offset) {
       handleLoadMore();
@@ -72,10 +83,14 @@ export const ProductScreen = () => {
   const filteredProducts = (products: Product[]) => {
     return keyword
       ? products.filter((product) =>
-          product.title.toLowerCase().includes(keyword.toLowerCase())
-        )
+        product.title.toLowerCase().includes(keyword.toLowerCase())
+      )
       : products;
   };
+
+  const handleAddToCart = (product: Product) => {
+    navigation.navigate('ProductDetail', {product: product})
+  }
 
   return (
     <View style={styles.container}>
@@ -116,38 +131,50 @@ export const ProductScreen = () => {
           style={styles.productList}
           onScroll={handleScroll}
           scrollEventThrottle={50}
-          
+
         >
-          {data && 
+          {data &&
             data.getCategory
-            .filter((category: CategoryType) => category.id === selectedCategory)
-            .map((category: CategoryType) => (
-              <View key={category.id} style={styles.categoryDetail}>
-                <Text style={styles.categoryDescription}>
-                  {category.description}
-                </Text>
-                {filteredProducts(category.product).map((product: Product) => (
-                  <View key={product.id} style={styles.productItem}>
-                    <Image
-                      source={{ uri: product.thumbnail }}
-                      style={styles.productThumbnail}
-                    />
-                    <View>
-                      <Text style={styles.productTitle}>{product.title}</Text>
-                      <Text style={styles.productDescription}>
-                        {product.description}
-                      </Text>
-                      <Text style={styles.productPrice}>
-                        Price: {product.price}
-                      </Text>
-                      <Text style={styles.productDiscount}>
-                        Discount: {product.discountPercent}%
-                      </Text>
+              .filter((category: CategoryType) => category.id === selectedCategory)
+              .map((category: CategoryType) => (
+                <View key={category.id} style={styles.categoryDetail}>
+                  <Text style={styles.categoryDescription}>{category.description}</Text>
+
+                  {filteredProducts(category.product).map((product: Product) => (
+                    <View key={product.id} style={styles.productItem}>
+                      <Image
+                        source={{ uri: product.thumbnail }}
+                        style={styles.productThumbnail}
+                      />
+
+                      <View style={styles.productInfo}>
+                        <Text style={styles.productTitle}>{product.title}</Text>
+                        <Text style={styles.productDescription}>{product.description}</Text>
+                        <Text style={styles.productPrice}>Giá niêm yết: {product.price}</Text>
+                        <Text style={styles.productDiscount}>Giảm giá: {product.discountPercent}%</Text>
+                        <Text style={{fontWeight: "bold"}}>Giá mới: {product.price*(1 - product.discountPercent/100)}</Text>
+                        <View style={{ flexDirection: "row", justifyContent: "center" }}>
+                          <TouchableOpacity
+                            style={styles.addToCartButton}
+                            onPress={() => handleAddToCart(product)}  // Gọi logic thêm vào giỏ hàng
+                          >
+                            <Text style={styles.addToCartText}>Thêm</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.seenDetailButton}
+                            onPress={() => handleAddToCart(product)}  // Gọi logic thêm vào giỏ hàng
+                          >
+                            <Text style={styles.addToCartText}>Chi tiết</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
                     </View>
-                  </View>
-                ))}
-              </View>
-            ))}
+                  ))}
+                </View>
+              ))
+          }
+
+
         </ScrollView>
       )}
     </View>
@@ -208,42 +235,86 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryDetail: {
+    padding: 20,
     marginBottom: 20,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
   categoryDescription: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   productItem: {
-    flexDirection: "row",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 5,
+    backgroundColor: '#fff',
+    borderRadius: 8,
     padding: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
   },
   productThumbnail: {
-    width: "20%",
-    height: 150,
-    resizeMode: "cover",
-    borderRadius: 5,
-    marginBottom: 10,
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 15,
+  },
+  productInfo: {
+    flex: 1,
   },
   productTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
   productDescription: {
     fontSize: 14,
-    color: "#666",
+    color: '#777',
+    marginBottom: 10,
   },
   productPrice: {
     fontSize: 14,
-    color: "#333",
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textDecorationLine: 'line-through',  // Thêm dấu gạch ngang
+    color: '#777',  // Màu sắc cho giá cũ (có thể điều chỉnh theo ý muốn)
   },
   productDiscount: {
+    fontSize: 12,
+    color: 'green',
+    marginBottom: 10,
+  },
+  addToCartButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+    marginRight: 10
+  },
+  addToCartText: {
+    color: '#fff',
     fontSize: 14,
-    color: "red",
+    fontWeight: 'bold',
+  },
+  seenDetailButton: {
+    backgroundColor: 'green',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+  },
+  seenDetail: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
