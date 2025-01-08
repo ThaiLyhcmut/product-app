@@ -55,6 +55,12 @@ export const RegisterScreen = ({ navigation }: any) => {
             const userData = await RGT.registerAccount(email,fullName,password,otp);
             if (userData) {
                 await handleLoginSuccess(userData);
+                setEmail("")
+                setPassword("")
+                setFullName("")
+                setOtp("")
+                setErrorMessage("")
+                setIsOtp(false)
                 navigation.navigate("Account")
             }
         } catch (err) {
@@ -89,13 +95,13 @@ export const RegisterScreen = ({ navigation }: any) => {
                       style={styles.inputEmail}
                       placeholder="Otp"
                       value={otp}
-                      onChangeText={(otp) => setEmail(otp)}
+                      onChangeText={(otp) => setOtp(otp)}
                   />
                   <TextInput
                       style={styles.inputEmail}
                       placeholder="fullName"
                       value={fullName}
-                      onChangeText={(fullName) => setEmail(fullName)}
+                      onChangeText={(fullName) => setFullName(fullName)}
                   />
                   <TextInput
                       style={styles.inputPassword}

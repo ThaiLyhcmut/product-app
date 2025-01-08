@@ -6,7 +6,7 @@ const name = "token"
 
 
 export const handleLoginSuccess = async (data: Account) => {
-  const { id, fullName, email, address, avatar, sex, birthday, token, code, msg } = data;
+  const { id, fullName, email, address,phone,  avatar, sex, birthday, token, code, msg } = data;
 
   // Kiểm tra nếu có lỗi từ server
   if (code === "error") {
@@ -19,7 +19,7 @@ export const handleLoginSuccess = async (data: Account) => {
   // Lưu trữ token vào Keychain
   
   await SecureStore.setItemAsync('TOKEN', token); // Hoặc dùng id thay vì email nếu cần
-  
+  console.log(birthday)
 
   // Lưu trữ các thông tin khác vào AsyncStorage
   await AsyncStorage.setItem('email', email);
@@ -29,6 +29,7 @@ export const handleLoginSuccess = async (data: Account) => {
   await AsyncStorage.setItem('avatar', avatar);
   await AsyncStorage.setItem('sex', sex);
   await AsyncStorage.setItem('birthday', birthday);
+  await AsyncStorage.setItem('phone', phone)
   return true;
 };
 
@@ -46,6 +47,7 @@ export interface User {
   avatar: string | null;
   sex: string | null;
   birthday: string | null;
+  phone: string | null
 }
 
 
@@ -57,8 +59,9 @@ export const getUser = async () => {
   const avatar = await AsyncStorage.getItem('avatar');
   const sex = await AsyncStorage.getItem('sex');
   const birthday = await AsyncStorage.getItem('birthday')
+  const phone = await AsyncStorage.getItem('phone')
   const User = {
-    email, fullName, id, address, avatar, sex, birthday
+    email, fullName, id, address, avatar, sex, birthday, phone
   }
   return User
 }

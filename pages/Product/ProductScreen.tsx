@@ -39,10 +39,12 @@ export const ProductScreen = () => {
   };
 
   const handleScroll = (event: any) => {
-    const contentHeight = event.nativeEvent.contentSize.height; // Total content height
-    const contentOffsetY = event.nativeEvent.contentOffset.y; // Scroll position
-    const layoutHeight = event.nativeEvent.layoutMeasurement.height; // Visible area height
-    if (contentOffsetY + layoutHeight >= contentHeight - 100 && productLength(selectedCategory) > offset) {
+    const contentHeight = event.nativeEvent.contentSize.height; // Tổng chiều cao của nội dung
+    const contentOffsetY = event.nativeEvent.contentOffset.y; // Vị trí cuộn hiện tại
+    const layoutHeight = event.nativeEvent.layoutMeasurement.height; // Chiều cao của khu vực hiển thị
+  
+    // Kiểm tra nếu cuộn đến gần giữa nội dung
+    if (contentOffsetY + layoutHeight / 2 >= contentHeight / 2 && productLength(selectedCategory) > offset) {
       handleLoadMore();
     }
   };
@@ -113,7 +115,8 @@ export const ProductScreen = () => {
         <ScrollView
           style={styles.productList}
           onScroll={handleScroll}
-          scrollEventThrottle={400}
+          scrollEventThrottle={50}
+          
         >
           {data && 
             data.getCategory

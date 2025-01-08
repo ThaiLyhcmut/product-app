@@ -1,13 +1,27 @@
 import { useState } from "react";
 import { Button, StyleSheet, Text, TextInput, View, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useLogin } from "../../graphql/account.graphql";
-import { handleLoginSuccess } from "../../store";
+import { getToken, handleLoginSuccess } from "../../store";
 
 export const LoginScreen = ({ navigation }: any) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { loginAccount, data, loading, error } = useLogin()
     const [errorMessage, setErrorMessage] = useState("");
+
+    let isLogin = false
+    const checkLoginStatus = async () => {
+        const token = await getToken();
+        if (token) {
+            isLogin = true
+        } else {
+            isLogin = false
+        }
+    };
+    checkLoginStatus();
+    if(isLogin){
+        navigation.navigate("Account")
+    }
 
     const handleLogin = async () => {
         setErrorMessage("");  // Clear any previous error message
@@ -30,6 +44,9 @@ export const LoginScreen = ({ navigation }: any) => {
             const userData = await loginAccount(email, password);
             if (userData) {
                 await handleLoginSuccess(userData);
+                setEmail("")
+                setPassword("")
+                setErrorMessage("")
                 navigation.navigate("Account")
             }
         } catch (err) {

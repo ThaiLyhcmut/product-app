@@ -39,7 +39,7 @@ const LOGIN_ACCOUNT = gql`
 
 
 const REGISTER_ACCOUNT = gql`
-  mutation RegisterAccount($email: String!, $fullName: String!, $password: String, $otp: String) {
+  mutation RegisterAccount($email: String!, $fullName: String!, $password: String!, $otp: String!) {
     registerAccount(
         account: { fullName: $fullName, email: $email, password: $password, otp: $otp }
     ) {
@@ -57,31 +57,30 @@ const REGISTER_ACCOUNT = gql`
     }
   }
 `
-
 const UPDATE_ACCOUNT = gql`
-mutation UpdateAccount {
-    updateAccount(
-        account: {
-            fullName: null
-            address: null
-            phone: null
-            avatar: null
-            sex: null
-            birthday: null
-        }
-    ) {
-        id
-        fullName
-        email
-        address
-        phone
-        avatar
-        sex
-        birthday
-        token
-        code
-        msg
+mutation UpdateAccount($fullName: String, $address: String, $phone: String, $avatar: String, $sex: String, $birthday: String) {
+  updateAccount(
+    account: {
+      fullName: $fullName,
+      address: $address,
+      phone: $phone,
+      avatar: $avatar,
+      sex: $sex,
+      birthday: $birthday,
     }
+  ) {
+    id
+    fullName
+    email
+    address
+    phone
+    avatar
+    sex
+    birthday
+    token
+    code
+    msg
+  }
 }
 `
 
@@ -136,7 +135,25 @@ export const useLogin = () => {
   return { loginAccount, data, loading, error };
 };
 
+export const useUpdateAccount = () => {
+  const [update, { data, loading, error }] = useMutation<{ updateAccount: Account }>(UPDATE_ACCOUNT)
 
+  const updateAccount = async (fullName: string, address: string, avatar: string, phone: string, sex: string, birthday: string) => {
+    console.log(fullName, address, birthday)
+    try {
+      const response = await update({
+        variables: {fullName, address, phone, avatar, sex, birthday }
+      })
+      console.log("Update success:", response.data?.updateAccount)
+      return response.data?.updateAccount
+    } catch (e) {
+      console.error("Update error", e)
+      return null
+    }
+  }
+
+  return { updateAccount, data, loading, error }
+}
 export const useOtp = () => {
   const [otp, {data, loading, error}] = useMutation<{createOtp: ResOtp}>(CREATE_OTP)
   const createOtp = async (email: string) => {
