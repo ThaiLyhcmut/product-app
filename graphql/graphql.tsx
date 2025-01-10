@@ -4,7 +4,7 @@ import { getToken } from '../store'; // Hàm lấy token từ nơi lưu trữ
 
 // Tạo HttpLink để kết nối đến GraphQL endpoint
 const httpLink = new HttpLink({
-  uri: 'http://192.168.1.5:8080/query', // Thay thế bằng URL của API GraphQL của bạn
+  uri: 'https://gql.thaily.id.vn/query', // Thay thế bằng URL của API GraphQL của bạn
 });
 
 // Tạo authLink để thêm token vào headers của mỗi yêu cầu
@@ -31,7 +31,6 @@ const authLink = setContext(async (_, { headers }) => {
 const client = new ApolloClient({
   link: authLink.concat(httpLink), // Kết hợp authLink và httpLink
   cache: new InMemoryCache(), // Sử dụng bộ nhớ đệm mặc định của Apollo
-  // connectToDevTools: true, // Bật công cụ phát triển nếu cần
 });
 
 export default client;

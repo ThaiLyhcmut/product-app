@@ -10,27 +10,51 @@ import { ApolloProvider } from '@apollo/client';
 import { LoginScreen } from './pages/Account/LoginScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { getToken } from './store';
+import { getToken, persistor, store } from './store';
 import client from './graphql/graphql';
 import { RegisterScreen } from './pages/Account/RegisterScreen';
 import { ProductDetailScreen } from './pages/Product/DetailScreen';
 import { Product, useCategoryWithPagination } from './graphql/product.graphql';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 
 const Tab = createBottomTabNavigator();
 /* STACK OF HOME */
 export type HomeList = {
-  Home: undefined
+  Home: undefined,
+  ProductDetail: { product: Product}
 }
 const StackHome = createNativeStackNavigator<HomeList>()
 
 // Stack cho Home Tab
 export const HomeStack = () => {
+  const { data, loading, error, fetchMore, loadMoreProducts } = useCategoryWithPagination();
+  let product: Product = {
+    id: 0,
+      title: "NULL",
+      description: "NULL",
+      price: 0,
+      discountPercent: 0,
+      stock: "NULL",
+      thumbnail: "NULL",
+      featured: false,
+      slug: "NULL",
+      status: "NULL",
+      position: "NULL", // Fixed typo
+  }
+  if (data){
+    product = product = data?.getCategory[0].product[0] 
+  }
   return (
     <StackHome.Navigator screenOptions={{
       headerShown: false
     }}>
       <StackHome.Screen name="Home" component={HomeScreen} />
       {/* Các màn hình con khác của Home */}
+      <StackProduct.Screen name="ProductDetail" options={{
+        // headerShown: true,
+        // headerTitle: ""
+      }} initialParams={{product}} component={ProductDetailScreen} />
     </StackHome.Navigator>
   );
 }
@@ -40,6 +64,7 @@ export type ProductList = {
   Product: undefined,
   ProductDetail: { product: Product}
 }
+
 const StackProduct = createNativeStackNavigator<ProductList>()
 // Stack cho Product Tab
 export const ProductStack = () => {
@@ -66,7 +91,10 @@ export const ProductStack = () => {
     }}>
       <StackProduct.Screen name="Product" component={ProductScreen} />
       {/* Các màn hình con khác của Product */}
-      <StackProduct.Screen name="ProductDetail" initialParams={{product}} component={ProductDetailScreen} />
+      <StackProduct.Screen name="ProductDetail" options={{
+        // headerShown: true,
+        // headerTitle: ""
+      }} initialParams={{product}} component={ProductDetailScreen} />
     </StackProduct.Navigator>
   );
 }
@@ -184,11 +212,15 @@ function TabNavigator() {
 // Main App Component
 export default function App() {
   return (
-    <ApolloProvider client={client}>
-      <NavigationContainer>
-        <TabNavigator />
-      </NavigationContainer>
-    </ApolloProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ApolloProvider client={client}>
+          <NavigationContainer>
+            <TabNavigator />
+          </NavigationContainer>
+        </ApolloProvider>
+      </PersistGate>
+    </Provider>
   );
 }
 

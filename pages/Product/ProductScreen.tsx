@@ -143,16 +143,15 @@ export const ProductScreen: React.FC<ProductScreenProps> = ({ route, navigation 
                   {filteredProducts(category.product).map((product: Product) => (
                     <View key={product.id} style={styles.productItem}>
                       <Image
-                        source={{ uri: product.thumbnail }}
+                        source={{ uri: product.thumbnail || 'https://via.placeholder.com/400x200' }}
                         style={styles.productThumbnail}
                       />
 
                       <View style={styles.productInfo}>
                         <Text style={styles.productTitle}>{product.title}</Text>
-                        <Text style={styles.productDescription}>{product.description}</Text>
                         <Text style={styles.productPrice}>Giá niêm yết: {product.price}</Text>
                         <Text style={styles.productDiscount}>Giảm giá: {product.discountPercent}%</Text>
-                        <Text style={{fontWeight: "bold"}}>Giá mới: {product.price*(1 - product.discountPercent/100)}</Text>
+                        <Text style={{fontWeight: "bold", color: "#e63946"}}>Giá mới: {product.price*(1 - product.discountPercent/100)}</Text>
                         <View style={{ flexDirection: "row", justifyContent: "center" }}>
                           <TouchableOpacity
                             style={styles.addToCartButton}

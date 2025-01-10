@@ -2,18 +2,20 @@ import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { useEffect } from "react";
 import { Product, useCategoryWithPagination } from "../../graphql/product.graphql";
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-type RootStackParamList = {
-  Home: undefined; // Home không có tham số
-  ProductTab: { screen: 'ProductDetail'; params: { product: Product } }; // Tham số cho màn hình ProductTab
-}
+import { HomeList } from "../../App";
+type HomeScreenNavigationProp = NativeStackNavigationProp<HomeList, "Home">;
+type HomeScreenRouteProp = RouteProp<HomeList, "Home">;
 
-export const HomeScreen = () => {
+interface HomeScreenProps {
+  navigation: HomeScreenNavigationProp;
+  route: HomeScreenRouteProp;
+}
+export const HomeScreen: React.FC<HomeScreenProps> = ({ route, navigation }) => {
   const { data, loading, error, fetchMore } = useCategoryWithPagination();
   const offset = 0;
   const limit = 3;
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Home'>>();
   useEffect(() => {
     fetchMore({ variables: { offset, limit } }); // Initial fetch
   }, []);
@@ -60,21 +62,15 @@ export const HomeScreen = () => {
                   />
                   <View style={styles.productTextContainer}>
                     <Text style={styles.productTitle}>{product.title}</Text>
-                    <Text style={styles.productDescription}>
-                      {product.description}
-                    </Text>
                     <Text style={styles.productPrice}>Giá niêm yết: {product.price}</Text>
                     <Text style={styles.productDiscount}>Giảm: {product.discountPercent}%</Text>
-                    <Text style={{ fontWeight: "bold" }}>
+                    <Text style={{ fontWeight: "bold", color:"#e63946" }}>
                       Giá mới: {product.price * (1 - product.discountPercent / 100)}
                     </Text>
                   </View>
                   {/* Thêm nút vào giỏ hàng */}
                   <TouchableOpacity style={styles.seenDetailButton} onPress={() => {
-                      navigation.navigate('ProductTab', {
-                        screen: 'ProductDetail',  // Điều hướng đến màn hình chi tiết
-                        params: { product: product },  // Truyền tham số vào màn hình chi tiết
-                      });
+                      navigation.navigate('ProductDetail',{ product: product});
                     }}>
                     <Text style={styles.seenDetail}>Chi tiết</Text>
                   </TouchableOpacity>
